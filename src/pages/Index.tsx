@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import GoogleLogo from "@/components/GoogleLogo";
 import SearchBar from "@/components/SearchBar";
@@ -6,9 +5,10 @@ import ShortcutTile from "@/components/ShortcutTile";
 import { User, ImageIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
+import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 
 // Define the shortcut type
 interface Shortcut {
@@ -41,6 +41,10 @@ const availableColors = [
   { bg: "bg-gray-100", text: "text-gray-700", label: "Gray" }
 ];
 
+interface FormValues {
+  name: string;
+}
+
 const Index = () => {
   const { toast } = useToast();
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
@@ -48,7 +52,7 @@ const Index = () => {
   const [selectedIcon, setSelectedIcon] = useState("youtube");
   const [selectedColor, setSelectedColor] = useState({ bg: "bg-gray-100", text: "text-gray-700" });
   
-  const form = useForm({
+  const form = useForm<FormValues>({
     defaultValues: {
       name: "",
     }
@@ -61,7 +65,6 @@ const Index = () => {
     if (savedShortcuts) {
       setShortcuts(JSON.parse(savedShortcuts));
     } else {
-      // Default shortcuts if none saved
       const defaultShortcuts = [
         { id: "1", name: "YouTube", icon: "youtube", bgColor: "bg-red-50", iconColor: "text-red-500" },
         { id: "2", name: "ChatGPT", icon: "message-circle", bgColor: "bg-gray-100", iconColor: "text-gray-700" },
@@ -85,7 +88,7 @@ const Index = () => {
     setShortcuts(updatedShortcuts);
   };
 
-  const handleAddShortcut = (data: { name: string }) => {
+  const handleAddShortcut = (data: FormValues) => {
     const newShortcut = {
       id: Date.now().toString(),
       name: data.name,
@@ -170,69 +173,70 @@ const Index = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={form.handleSubmit(handleAddShortcut)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Shortcut Name</FormLabel>
-                  <FormControl>
-                    <input 
-                      className="w-full p-2 border border-gray-300 rounded-md" 
-                      placeholder="e.g. Twitter, Facebook" 
-                      {...field} 
-                      required
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleAddShortcut)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Shortcut Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. Twitter, Facebook"
+                        {...field}
+                        required
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-            <div>
-              <FormLabel>Icon</FormLabel>
-              <div className="grid grid-cols-3 gap-2 mt-2">
-                {availableIcons.map(icon => (
-                  <button
-                    key={icon.value}
-                    type="button"
-                    className={`p-2 rounded-md flex items-center justify-center ${selectedIcon === icon.value ? 'bg-blue-100 border border-blue-500' : 'border border-gray-200'}`}
-                    onClick={() => setSelectedIcon(icon.value)}
-                  >
-                    <ShortcutTile
-                      id={icon.value}
-                      name={icon.label}
-                      icon={icon.value}
-                      bgColor="bg-transparent"
-                    />
-                  </button>
-                ))}
+              <div>
+                <FormLabel>Icon</FormLabel>
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  {availableIcons.map(icon => (
+                    <button
+                      key={icon.value}
+                      type="button"
+                      className={`p-2 rounded-md flex items-center justify-center ${selectedIcon === icon.value ? 'bg-blue-100 border border-blue-500' : 'border border-gray-200'}`}
+                      onClick={() => setSelectedIcon(icon.value)}
+                    >
+                      <ShortcutTile
+                        id={icon.value}
+                        name={icon.label}
+                        icon={icon.value}
+                        bgColor="bg-transparent"
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div>
-              <FormLabel>Background Color</FormLabel>
-              <div className="grid grid-cols-4 gap-2 mt-2">
-                {availableColors.map(color => (
-                  <button
-                    key={color.bg}
-                    type="button"
-                    className={`p-3 rounded-md ${color.bg} ${selectedColor.bg === color.bg ? 'ring-2 ring-blue-500' : ''}`}
-                    onClick={() => setSelectedColor({ bg: color.bg, text: color.text })}
-                  />
-                ))}
+              <div>
+                <FormLabel>Background Color</FormLabel>
+                <div className="grid grid-cols-4 gap-2 mt-2">
+                  {availableColors.map(color => (
+                    <button
+                      key={color.bg}
+                      type="button"
+                      className={`p-3 rounded-md ${color.bg} ${selectedColor.bg === color.bg ? 'ring-2 ring-blue-500' : ''}`}
+                      onClick={() => setSelectedColor({ bg: color.bg, text: color.text })}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                Add Shortcut
-              </Button>
-            </div>
-          </form>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  Add Shortcut
+                </Button>
+              </div>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </div>
